@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Family Hub</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <h1>🏡 Family Hub</h1>
+      <p>A free, simple homepage for your household.</p>
+    </header>
+
+    <main class="grid">
+      <section class="card" data-min-role="kid">
+        <h2>👤 Profile</h2>
+        <label for="active-profile">Signed in as</label>
+        <select id="active-profile"></select>
+        <p id="active-role" class="hint"></p>
+      </section>
+
+      <section class="card" id="admin-panel" data-min-role="admin">
+        <h2>🛠️ Admin Panel</h2>
+        <p class="hint">Create family profiles and set what each role can see.</p>
+
+        <h3>Add profile</h3>
+        <form id="profile-form" class="stack-form">
+          <input id="profile-name" type="text" placeholder="Name" required />
+          <select id="profile-role" required>
+            <option value="kid">Kid</option>
+            <option value="parent">Parent</option>
+            <option value="admin">Admin</option>
+          </select>
+          <input id="profile-pin" type="password" placeholder="PIN (required for admin)" />
+          <button type="submit">Create profile</button>
+        </form>
+
+        <h3>Profiles</h3>
+        <ul id="profile-list" class="list"></ul>
+
+        <h3>Section visibility</h3>
+        <form id="permissions-form" class="stack-form">
+          <label for="perm-events">Schedule visibility</label>
+          <select id="perm-events">
+            <option value="kid">Kid and above</option>
+            <option value="parent">Parent and admin only</option>
+            <option value="admin">Admin only</option>
+          </select>
+
+          <label for="perm-groceries">Grocery visibility</label>
+          <select id="perm-groceries">
+            <option value="kid">Kid and above</option>
+            <option value="parent">Parent and admin only</option>
+            <option value="admin">Admin only</option>
+          </select>
+
+          <label for="perm-chores">Chore visibility</label>
+          <select id="perm-chores">
+            <option value="kid">Kid and above</option>
+            <option value="parent">Parent and admin only</option>
+            <option value="admin">Admin only</option>
+          </select>
+
+          <label for="perm-notes">Notes visibility</label>
+          <select id="perm-notes">
+            <option value="kid">Kid and above</option>
+            <option value="parent">Parent and admin only</option>
+            <option value="admin">Admin only</option>
+          </select>
+
+          <button type="submit">Save visibility rules</button>
+        </form>
+      </section>
+
+      <section class="card" id="events-section" data-min-role="kid">
+        <h2>📅 Shared Schedule</h2>
+        <form id="event-form" class="inline-form">
+          <input id="event-title" type="text" placeholder="Event name" required />
+          <input id="event-date" type="date" required />
+          <button type="submit">Add</button>
+        </form>
+        <ul id="event-list" class="list"></ul>
+      </section>
+
+      <section class="card" id="groceries-section" data-min-role="kid">
+        <h2>🛒 Grocery List</h2>
+        <form id="grocery-form" class="inline-form">
+          <input id="grocery-item" type="text" placeholder="Add grocery item" required />
+          <button type="submit">Add</button>
+        </form>
+        <ul id="grocery-list" class="list"></ul>
+      </section>
+
+      <section class="card" id="chores-section" data-min-role="kid">
+        <h2>✅ Chore Board</h2>
+        <form id="chore-form" class="inline-form">
+          <input id="chore-item" type="text" placeholder="Add chore" required />
+          <button type="submit">Add</button>
+        </form>
+        <ul id="chore-list" class="list"></ul>
+      </section>
+
+      <section class="card" id="notes-section" data-min-role="parent">
+        <h2>📌 Notes</h2>
+        <textarea id="notes" rows="8" placeholder="Shared notes for reminders, meal plans, or ideas..."></textarea>
+        <p class="hint">Saved automatically in your browser.</p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built with free tools: HTML, CSS, and JavaScript.</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
