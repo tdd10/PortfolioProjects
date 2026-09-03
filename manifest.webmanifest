@@ -1,0 +1,10 @@
+{
+  "name": "Hearth Family Hub",
+  "short_name": "Hearth",
+  "description": "A private digital home for your family.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#111513",
+  "theme_color": "#111513",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
