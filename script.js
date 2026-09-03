@@ -1,339 +1,105 @@
-const roleRank = { kid: 1, parent: 2, admin: 3 };
-const roleLabel = { kid: "Kid", parent: "Parent", admin: "Admin" };
-const canAccess = (role, minRole) => roleRank[role] >= roleRank[minRole];
-
-const makeStore = (key, fallback) => {
-  const load = () => JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
-  const save = (value) => localStorage.setItem(key, JSON.stringify(value));
-  return { load, save };
+const seed = {
+  tasks:[
+    {id:'t1',title:'Take recycling to curb',meta:'Home · James',time:'8:00 AM',done:false},
+    {id:'t2',title:'Return library books',meta:'Errand · Caroline',time:'4:30 PM',done:false},
+    {id:'t3',title:'Water the garden',meta:'Backyard · James',time:'6:00 PM',done:true},
+    {id:'t4',title:'Practice piano',meta:'Daily · Caroline',time:'7:00 PM',done:false}
+  ],
+  groceries:[
+    {name:'Honeycrisp apples',category:'Produce',quantity:'6',done:false},{name:'Baby spinach',category:'Produce',quantity:'1 bag',done:true},{name:'Whole milk',category:'Dairy',quantity:'1 gal',done:true},{name:'Sourdough bread',category:'Bakery',quantity:'1',done:false},{name:'Chicken thighs',category:'Meat',quantity:'2 lb',done:false}
+  ],
+  events:[
+    {day:0,title:'Labor Day',time:'All day',tone:'green'}, {day:1,title:'School drop-off',time:'8:15 AM',tone:'blue'},
+    {day:2,title:'Dentist · Caroline',time:'3:30 PM',tone:'blue'}, {day:3,title:'Team standup',time:'9:00 AM',tone:'amber'},
+    {day:3,title:'Soccer practice',time:'5:30 PM',tone:'blue'}, {day:4,title:'Date night',time:'7:00 PM',tone:'rose'},
+    {day:5,title:'Farmers market',time:'10:00 AM',tone:'green'}, {day:6,title:'Family dinner',time:'5:30 PM',tone:'green'}
+  ],
+  feed:[{author:'Sarah',text:'First day of school success! She was so excited 🎒',time:'2 hours ago'},{author:'James',text:'The raised garden beds are finally finished. Tomatoes next!',time:'Yesterday'}]
 };
 
-const defaultProfiles = [
-  { id: crypto.randomUUID(), name: "Family Admin", role: "admin", pin: "1234" },
-  { id: crypto.randomUUID(), name: "Parent", role: "parent", pin: "" },
-  { id: crypto.randomUUID(), name: "Kid", role: "kid", pin: "" }
-];
+const storageKey='hearth-family-hub-v1';
+const load=()=>{try{return {...structuredClone(seed),...JSON.parse(localStorage.getItem(storageKey)||'{}')}}catch{return structuredClone(seed)}};
+let state=load();
+const save=()=>localStorage.setItem(storageKey,JSON.stringify(state));
+const $=(s,root=document)=>root.querySelector(s); const $$=(s,root=document)=>[...root.querySelectorAll(s)];
+const escapeHtml=value=>String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 
-const stores = {
-  profiles: makeStore("familyhub-profiles", defaultProfiles),
-  activeProfileId: makeStore("familyhub-active-profile-id", defaultProfiles[0].id),
-  permissions: makeStore("familyhub-permissions", {
-    events: "kid",
-    groceries: "kid",
-    chores: "kid",
-    notes: "parent"
-  }),
-  events: makeStore("familyhub-events", []),
-  groceries: makeStore("familyhub-grocery", []),
-  chores: makeStore("familyhub-chores", [])
+const modules={
+  calendar:{kicker:'TIME TOGETHER',title:'Family calendar',description:'One calm view of everyone’s schedule.',type:'calendar'},
+  tasks:{kicker:'ORGANIZE',title:'Tasks & chores',description:'Shared responsibilities, recurring routines, and a record of what got done.',type:'tasks'},
+  grocery:{kicker:'ORGANIZE',title:'Grocery list',description:'A live, collaborative list with history and smart grouping.',type:'grocery'},
+  meals:{kicker:'NOURISH',title:'Meals & recipes',description:'Plan the week without letting empty meal slots get in the way.',cards:[['♨','Tonight','Roasted chicken & vegetables'],['□','Friday dinner','Homemade pizza'],['♡','Recipe library','24 family recipes'],['＋','Add to grocery','Choose recipe ingredients']]},
+  lists:{kicker:'ORGANIZE',title:'Shared lists',description:'Ideas and checklists, shared with exactly the right people.',cards:[['🎁','Christmas gifts','8 items · Private'],['⌁','Beach packing','14 of 22 packed'],['⌂','Home improvements','6 ideas'],['＋','New list','Private, family, or selected people']]},
+  goals:{kicker:'GROW TOGETHER',title:'Goals & rewards',description:'Celebrate progress, from family dreams to everyday wins.',cards:[['◇','Summer road trip','68% complete'],['★','Caroline’s rewards','1,740 / 2,500 points'],['✓','Point requests','2 awaiting approval'],['＋','Create a goal','Family or personal']]},
+  maintenance:{kicker:'LOOK AFTER HOME',title:'Home & vehicles',description:'Maintenance history and reminders for the things your family relies on.',cards:[['◇','2021 Subaru Outback','Oil change in 5 days'],['⌂','HVAC system','Filter due September 14'],['◉','Smoke detectors','Batteries due in 28 days'],['＋','Add an asset','Home or vehicle']]},
+  gallery:{kicker:'FAMILY ARCHIVE',title:'Gallery',description:'Keep the moments that become your family story.',cards:[['▧','Summer 2026','48 photos'],['▧','First day of school','12 photos'],['▧','Garden project','8 photos'],['＋','Create an album','Upload photos and video']]},
+  journal:{kicker:'PRIVATE SPACE',title:'My journal',description:'Your entries are private by default and protected by elevated access controls.',cards:[['▱','A fresh school year','September 2 · Hopeful'],['▱','Things I’m grateful for','August 28 · Content'],['⌕','Search journal','Search titles, entries, and tags'],['＋','New entry','Private by default']]},
+  feed:{kicker:'STAY CLOSE',title:'Family feed',description:'Small updates and favorite moments, just for your family.',type:'feed'},
+  documents:{kicker:'PROTECTED',title:'Document vault',description:'An isolated, audited home for sensitive family files.',secure:'Document contents stay isolated and are never surfaced elsewhere. V1 establishes the permission, audit, and storage boundary for future encrypted uploads.'},
+  finance:{kicker:'PROTECTED',title:'Finance',description:'A deliberately limited foundation for future family finances.',secure:'No bank credentials or fabricated accounts are stored. Future connections will use revocable provider tokens inside a dedicated data boundary.'},
+  portfolio:{kicker:'SEPARATE ACCESS',title:'Portfolio invitations',description:'Professional work shared without granting any Family Hub access.',cards:[['↗','Design system case study','2 active guest invitations'],['↗','Analytics dashboard','1 invitation · expires Sep 12'],['＋','Invite a guest','Restricted project session'],['⌕','Access history','All guest activity is audited']]}
 };
 
-let profiles = stores.profiles.load();
-let activeProfileId = stores.activeProfileId.load();
-let permissions = stores.permissions.load();
-let events = stores.events.load();
-let groceries = stores.groceries.load();
-let chores = stores.chores.load();
-
-if (!profiles.length) {
-  profiles = defaultProfiles;
-  stores.profiles.save(profiles);
+function renderWeek(target='#week-calendar'){
+  const days=['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  $(target).innerHTML=days.map((day,i)=>`<div class="day ${i===3?'today':''}"><div class="day-head">${day}<strong>${i+1}</strong></div>${state.events.filter(e=>e.day===i).map(e=>`<div class="event ${e.tone||''}"><strong>${escapeHtml(e.title)}</strong><small>${escapeHtml(e.time)}</small></div>`).join('')}</div>`).join('');
+}
+function renderTasks(target='#home-tasks'){
+  $(target).innerHTML=state.tasks.slice(0,target==='#home-tasks'?4:99).map(t=>`<label class="task-row ${t.done?'completed':''}"><input type="checkbox" data-task="${t.id}" ${t.done?'checked':''}><span><strong>${escapeHtml(t.title)}</strong><small>${escapeHtml(t.meta)}</small></span><time>${escapeHtml(t.time)}</time></label>`).join('');
+  $('#task-badge').textContent=state.tasks.filter(t=>!t.done).length;
+}
+function bindChecks(){
+  $$('[data-task]').forEach(el=>el.addEventListener('change',()=>{const item=state.tasks.find(t=>t.id===el.dataset.task);item.done=el.checked;save();renderTasks();if($('#view-module').classList.contains('active')&&$('#module-title').textContent==='Tasks & chores')renderModule('tasks');showToast(item.done?'Task completed':'Task restored')}));
+}
+function renderModule(name){
+  const m=modules[name]||modules.tasks;
+  $('#module-kicker').textContent=m.kicker;$('#module-title').textContent=m.title;$('#module-description').textContent=m.description;
+  $('#module-add').dataset.add=name==='grocery'?'grocery':name==='feed'?'post':'task';
+  let html='';
+  if(m.type==='calendar')html=`<section class="card hero-calendar"><div class="section-head"><h2>September 2026</h2><div class="calendar-controls"><button class="icon-button">‹</button><button class="today-button">Today</button><button class="icon-button">›</button></div></div><div class="week" id="module-week"></div><div class="calendar-legend"><span><i class="dot amber"></i>James</span><span><i class="dot rose"></i>Sarah</span><span><i class="dot blue"></i>Caroline</span><span><i class="dot green"></i>Family</span></div></section>`;
+  else if(m.type==='tasks')html=`<section class="card panel"><div class="section-head"><h2>Today</h2><span class="tag">${state.tasks.filter(t=>!t.done).length} remaining</span></div><div id="module-tasks"></div></section>`;
+  else if(m.type==='grocery')html=`<section class="card panel"><table class="data-table"><thead><tr><th>ITEM</th><th>CATEGORY</th><th>QUANTITY</th><th>STATUS</th></tr></thead><tbody>${state.groceries.map((g,i)=>`<tr><td><label><input type="checkbox" data-grocery="${i}" ${g.done?'checked':''}> ${escapeHtml(g.name)}</label></td><td>${escapeHtml(g.category)}</td><td>${escapeHtml(g.quantity)}</td><td><span class="tag">${g.done?'Picked up':'Needed'}</span></td></tr>`).join('')}</tbody></table></section>`;
+  else if(m.type==='feed')html=`<div class="module-grid">${state.feed.map((p,i)=>`<article class="card module-card"><div class="feed-author"><span class="avatar ${i?'avatar-james':'avatar-sarah'}">${p.author.slice(0,2).toUpperCase()}</span><strong>${escapeHtml(p.author)}</strong><span>${escapeHtml(p.time)}</span></div><p>${escapeHtml(p.text)}</p><footer><span>♥ ${i?5:8} · ${i?2:3} comments</span><button class="text-button">Reply →</button></footer></article>`).join('')}</div>`;
+  else if(m.secure)html=`<section class="card empty-shell"><div class="lock">▣</div><h3>Secure foundation in place</h3><p>${escapeHtml(m.secure)}</p><span class="security-note">◇ Deny by default · Every access audited</span></section>`;
+  else html=`<div class="module-grid">${m.cards.map(c=>`<article class="card module-card"><div class="card-icon">${c[0]}</div><h3>${escapeHtml(c[1])}</h3><p>${escapeHtml(c[2])}</p><footer><span>Updated recently</span><button class="text-button">Open →</button></footer></article>`).join('')}</div>`;
+  $('#module-content').innerHTML=html;
+  if(m.type==='calendar')renderWeek('#module-week');
+  if(m.type==='tasks'){renderTasks('#module-tasks');bindChecks()}
+  $$('[data-grocery]').forEach(el=>el.addEventListener('change',()=>{state.groceries[+el.dataset.grocery].done=el.checked;save();renderModule('grocery');showToast(el.checked?'Moved to history':'Restored to list')}));
 }
 
-if (!profiles.some((p) => p.id === activeProfileId)) {
-  activeProfileId = profiles[0].id;
-  stores.activeProfileId.save(activeProfileId);
+function navigate(name){
+  $$('.view').forEach(v=>v.classList.remove('active')); $$('.nav-item,.mobile-nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  if(name==='home'){$('#view-home').classList.add('active');$('#page-title').textContent='Good morning, James.';$('#page-eyebrow').textContent='THURSDAY, SEPTEMBER 3'}
+  else{$('#view-module').classList.add('active');renderModule(name);$('#page-title').textContent=modules[name]?.title||'Family Hub';$('#page-eyebrow').textContent=modules[name]?.kicker||'FAMILY HUB'}
+  $('#sidebar').classList.remove('open');$('#scrim').classList.remove('show');window.scrollTo({top:0});
 }
 
-const getActiveProfile = () => profiles.find((p) => p.id === activeProfileId) || profiles[0];
-const isAdmin = () => getActiveProfile().role === "admin";
-const canEdit = () => roleRank[getActiveProfile().role] >= roleRank.parent;
-
-const activeProfileSelect = document.querySelector("#active-profile");
-const activeRole = document.querySelector("#active-role");
-const profileList = document.querySelector("#profile-list");
-
-const profileForm = document.querySelector("#profile-form");
-const profileName = document.querySelector("#profile-name");
-const profileRole = document.querySelector("#profile-role");
-const profilePin = document.querySelector("#profile-pin");
-
-const permissionsForm = document.querySelector("#permissions-form");
-const permEvents = document.querySelector("#perm-events");
-const permGroceries = document.querySelector("#perm-groceries");
-const permChores = document.querySelector("#perm-chores");
-const permNotes = document.querySelector("#perm-notes");
-
-const eventForm = document.querySelector("#event-form");
-const eventTitle = document.querySelector("#event-title");
-const eventDate = document.querySelector("#event-date");
-const eventList = document.querySelector("#event-list");
-
-const groceryForm = document.querySelector("#grocery-form");
-const groceryItem = document.querySelector("#grocery-item");
-const groceryList = document.querySelector("#grocery-list");
-
-const choreForm = document.querySelector("#chore-form");
-const choreItem = document.querySelector("#chore-item");
-const choreList = document.querySelector("#chore-list");
-
-const notesEl = document.querySelector("#notes");
-notesEl.value = localStorage.getItem("familyhub-notes") || "";
-
-const sectionKeys = {
-  "#events-section": "events",
-  "#groceries-section": "groceries",
-  "#chores-section": "chores",
-  "#notes-section": "notes"
-};
-
-const renderList = (items, listEl, options) => {
-  const { allowToggle, allowDelete, onToggle, onDelete, labelFormat } = options;
-  listEl.innerHTML = "";
-
-  items.forEach((item, index) => {
-    const li = document.createElement("li");
-    const text = document.createElement("span");
-    text.textContent = labelFormat ? labelFormat(item) : item.label;
-    if (item.done) text.classList.add("done");
-
-    const actions = document.createElement("div");
-    actions.className = "actions";
-
-    if (allowToggle) {
-      const toggle = document.createElement("button");
-      toggle.type = "button";
-      toggle.textContent = item.done ? "Undo" : "Done";
-      toggle.addEventListener("click", () => onToggle(index));
-      actions.append(toggle);
-    }
-
-    if (allowDelete) {
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.textContent = "Delete";
-      remove.addEventListener("click", () => onDelete(index));
-      actions.append(remove);
-    }
-
-    li.append(text);
-    if (actions.childNodes.length) li.append(actions);
-    listEl.append(li);
-  });
-};
-
-const renderProfiles = () => {
-  const active = getActiveProfile();
-
-  activeProfileSelect.innerHTML = "";
-  profiles.forEach((p) => {
-    const option = document.createElement("option");
-    option.value = p.id;
-    option.textContent = `${p.name} (${roleLabel[p.role]})`;
-    activeProfileSelect.append(option);
-  });
-  activeProfileSelect.value = active.id;
-
-  activeRole.textContent = `Role: ${roleLabel[active.role]}`;
-
-  profileList.innerHTML = "";
-  profiles.forEach((p) => {
-    const li = document.createElement("li");
-    const text = document.createElement("span");
-    text.textContent = `${p.name} — ${roleLabel[p.role]}`;
-
-    const actions = document.createElement("div");
-    actions.className = "actions";
-
-    if (isAdmin() && p.id !== active.id) {
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.textContent = "Delete";
-      remove.addEventListener("click", () => {
-        profiles = profiles.filter((profile) => profile.id !== p.id);
-        stores.profiles.save(profiles);
-        renderAll();
-      });
-      actions.append(remove);
-    }
-
-    li.append(text);
-    if (actions.childNodes.length) li.append(actions);
-    profileList.append(li);
-  });
-};
-
-const applyVisibility = () => {
-  const role = getActiveProfile().role;
-  Object.entries(sectionKeys).forEach(([selector, key]) => {
-    const section = document.querySelector(selector);
-    const minRole = permissions[key];
-    section.hidden = !canAccess(role, minRole);
-  });
-
-  document.querySelector("#admin-panel").hidden = role !== "admin";
-
-  const editingAllowed = canEdit();
-  [eventForm, groceryForm, choreForm].forEach((form) => {
-    Array.from(form.elements).forEach((el) => {
-      el.disabled = !editingAllowed;
-    });
-  });
-
-  notesEl.disabled = !editingAllowed;
-};
-
-const renderEvents = () => {
-  const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date));
-  renderList(sorted, eventList, {
-    allowToggle: false,
-    allowDelete: canEdit(),
-    labelFormat: (item) => `${item.date} — ${item.label}`,
-    onToggle: () => {},
-    onDelete: (idx) => {
-      const match = sorted[idx];
-      events = events.filter((e) => !(e.date === match.date && e.label === match.label));
-      stores.events.save(events);
-      renderEvents();
-    }
-  });
-};
-
-const renderGroceries = () => {
-  renderList(groceries, groceryList, {
-    allowToggle: true,
-    allowDelete: canEdit(),
-    onToggle: (idx) => {
-      groceries[idx].done = !groceries[idx].done;
-      stores.groceries.save(groceries);
-      renderGroceries();
-    },
-    onDelete: (idx) => {
-      groceries.splice(idx, 1);
-      stores.groceries.save(groceries);
-      renderGroceries();
-    }
-  });
-};
-
-const renderChores = () => {
-  renderList(chores, choreList, {
-    allowToggle: true,
-    allowDelete: canEdit(),
-    onToggle: (idx) => {
-      chores[idx].done = !chores[idx].done;
-      stores.chores.save(chores);
-      renderChores();
-    },
-    onDelete: (idx) => {
-      chores.splice(idx, 1);
-      stores.chores.save(chores);
-      renderChores();
-    }
-  });
-};
-
-const renderAll = () => {
-  permEvents.value = permissions.events;
-  permGroceries.value = permissions.groceries;
-  permChores.value = permissions.chores;
-  permNotes.value = permissions.notes;
-
-  renderProfiles();
-  applyVisibility();
-  renderEvents();
-  renderGroceries();
-  renderChores();
-};
-
-activeProfileSelect.addEventListener("change", () => {
-  const next = profiles.find((p) => p.id === activeProfileSelect.value);
-  if (!next) return;
-
-  if (next.role === "admin") {
-    const inputPin = prompt("Enter admin PIN");
-    if (inputPin !== next.pin) {
-      alert("Incorrect PIN.");
-      activeProfileSelect.value = activeProfileId;
-      return;
-    }
-  }
-
-  activeProfileId = next.id;
-  stores.activeProfileId.save(activeProfileId);
-  renderAll();
-});
-
-profileRole.addEventListener("change", () => {
-  profilePin.required = profileRole.value === "admin";
-});
-
-profileForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  if (!isAdmin()) return;
-
-  const name = profileName.value.trim();
-  const role = profileRole.value;
-  const pin = profilePin.value.trim();
-
-  if (!name) return;
-  if (role === "admin" && pin.length < 4) {
-    alert("Admin PIN must be at least 4 characters.");
-    return;
-  }
-
-  profiles.push({ id: crypto.randomUUID(), name, role, pin });
-  stores.profiles.save(profiles);
-  profileForm.reset();
-  profilePin.required = false;
-  renderAll();
-});
-
-permissionsForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  if (!isAdmin()) return;
-
-  permissions = {
-    events: permEvents.value,
-    groceries: permGroceries.value,
-    chores: permChores.value,
-    notes: permNotes.value
+const dialog=$('#action-dialog');
+function openDialog(type='task'){
+  const configs={
+    task:['Add a task',`<div class="dialog-field"><label for="item-title">Task title</label><input id="item-title" name="title" required autocomplete="off"></div><div class="dialog-field"><label for="item-time">Due time</label><input id="item-time" name="time" type="time"></div>`],
+    grocery:['Add grocery item',`<div class="dialog-field"><label for="item-title">Item</label><input id="item-title" name="title" required autocomplete="off"></div><div class="dialog-field"><label for="item-category">Category</label><select id="item-category" name="category"><option>Produce</option><option>Meat</option><option>Dairy</option><option>Pantry</option><option>Household</option><option>Other</option></select></div>`],
+    post:['Share with family',`<div class="dialog-field"><label for="item-title">What’s happening?</label><textarea id="item-title" name="title" rows="4" required></textarea></div>`]
   };
-
-  stores.permissions.save(permissions);
-  renderAll();
+  const [title,body]=configs[type]||configs.task;$('#dialog-title').textContent=title;$('#dialog-body').innerHTML=body;$('#action-form').dataset.type=type;dialog.showModal();setTimeout(()=>$('#item-title')?.focus(),40);
+}
+$('#action-form').addEventListener('submit',e=>{
+  if(e.submitter?.value==='cancel')return;
+  e.preventDefault();const fd=new FormData(e.currentTarget),title=String(fd.get('title')||'').trim();if(!title)return;
+  const type=e.currentTarget.dataset.type;
+  if(type==='task')state.tasks.push({id:uid(),title,meta:'Home · James',time:fd.get('time')||'Anytime',done:false});
+  if(type==='grocery')state.groceries.push({name:title,category:fd.get('category'),quantity:'1',done:false});
+  if(type==='post')state.feed.unshift({author:'James',text:title,time:'Just now'});
+  save();dialog.close();renderTasks();bindChecks();showToast(type==='post'?'Shared with your family':'Added successfully');
+  if($('#view-module').classList.contains('active'))renderModule(type==='post'?'feed':type==='grocery'?'grocery':'tasks');
 });
+let toastTimer;function showToast(message){$('#toast-message').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),2400)}
 
-eventForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  if (!canEdit()) return;
-  events.push({ label: eventTitle.value.trim(), date: eventDate.value, done: false });
-  stores.events.save(events);
-  eventForm.reset();
-  renderEvents();
-});
-
-groceryForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  if (!canEdit()) return;
-  groceries.push({ label: groceryItem.value.trim(), done: false });
-  stores.groceries.save(groceries);
-  groceryForm.reset();
-  renderGroceries();
-});
-
-choreForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  if (!canEdit()) return;
-  chores.push({ label: choreItem.value.trim(), done: false });
-  stores.chores.save(chores);
-  choreForm.reset();
-  renderChores();
-});
-
-notesEl.addEventListener("input", () => {
-  if (!canEdit()) return;
-  localStorage.setItem("familyhub-notes", notesEl.value);
-});
-
-renderAll();
+document.addEventListener('click',e=>{const view=e.target.closest('[data-view]')?.dataset.view;if(view)navigate(view);const add=e.target.closest('[data-add]')?.dataset.add;if(add)openDialog(add)});
+$('#quick-add').addEventListener('click',()=>openDialog('task'));$('#mobile-add').addEventListener('click',()=>openDialog('task'));
+$('#menu-button').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#scrim').classList.add('show')});$('#scrim').addEventListener('click',()=>navigate('home'));
+$('#notification-button').addEventListener('click',()=>showToast('You’re all caught up'));$('#search-button').addEventListener('click',()=>showToast('Search is ready for your family archive'));
+renderWeek();renderTasks();bindChecks();
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));

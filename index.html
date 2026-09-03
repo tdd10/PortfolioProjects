@@ -1,117 +1,93 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Family Hub</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <header class="hero">
-      <h1>🏡 Family Hub</h1>
-      <p>A free, simple homepage for your household.</p>
-    </header>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101412">
+  <meta name="description" content="A private digital home for your family.">
+  <title>Hearth — Family Hub</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">H</span><span>hearth<small>FAMILY HUB</small></span></div>
+      <nav id="primary-nav">
+        <p class="nav-label">HOME</p>
+        <button class="nav-item active" data-view="home"><span>⌂</span>Overview</button>
+        <button class="nav-item" data-view="calendar"><span>□</span>Calendar</button>
+        <button class="nav-item" data-view="feed"><span>♢</span>Family feed <i class="nav-dot"></i></button>
+        <p class="nav-label">ORGANIZE</p>
+        <button class="nav-item" data-view="tasks"><span>✓</span>Tasks <b id="task-badge">4</b></button>
+        <button class="nav-item" data-view="grocery"><span>♧</span>Grocery</button>
+        <button class="nav-item" data-view="meals"><span>♨</span>Meals &amp; recipes</button>
+        <button class="nav-item" data-view="lists"><span>☷</span>Lists</button>
+        <p class="nav-label">LIFE</p>
+        <button class="nav-item" data-view="goals"><span>◇</span>Goals &amp; rewards</button>
+        <button class="nav-item" data-view="maintenance"><span>⌂</span>Home &amp; vehicles</button>
+        <button class="nav-item" data-view="gallery"><span>▧</span>Gallery</button>
+        <button class="nav-item" data-view="journal"><span>▱</span>My journal <em>Private</em></button>
+        <p class="nav-label">SECURE</p>
+        <button class="nav-item" data-view="documents"><span>▣</span>Documents <em>Vault</em></button>
+        <button class="nav-item" data-view="finance"><span>◫</span>Finance</button>
+        <button class="nav-item" data-view="portfolio"><span>↗</span>Portfolio access</button>
+      </nav>
+      <button class="profile-card" id="profile-button" aria-haspopup="menu">
+        <span class="avatar avatar-james">JM</span><span><strong>James Miller</strong><small>Owner · Admin</small></span><span>•••</span>
+      </button>
+    </aside>
 
-    <main class="grid">
-      <section class="card" data-min-role="kid">
-        <h2>👤 Profile</h2>
-        <label for="active-profile">Signed in as</label>
-        <select id="active-profile"></select>
-        <p id="active-role" class="hint"></p>
-      </section>
+    <div class="page">
+      <header class="topbar">
+        <button class="icon-button menu-button" id="menu-button" aria-label="Open navigation">☰</button>
+        <div><p class="eyebrow" id="page-eyebrow">THURSDAY, SEPTEMBER 3</p><h1 id="page-title">Good morning, James.</h1></div>
+        <div class="top-actions">
+          <button class="icon-button" id="search-button" aria-label="Search">⌕</button>
+          <button class="icon-button notification-button" id="notification-button" aria-label="Notifications">♢<i></i></button>
+          <button class="quick-add" id="quick-add"><span>＋</span> Quick add</button>
+        </div>
+      </header>
 
-      <section class="card" id="admin-panel" data-min-role="admin">
-        <h2>🛠️ Admin Panel</h2>
-        <p class="hint">Create family profiles and set what each role can see.</p>
+      <main id="main" tabindex="-1">
+        <section class="view active" id="view-home" aria-labelledby="page-title">
+          <div class="welcome-row"><p>Here’s what’s happening with your family today.</p><div class="weather"><span>☀</span><strong>72°</strong><small>Clear · Portland</small></div></div>
+          <section class="hero-calendar card">
+            <div class="section-head">
+              <div><p class="eyebrow">FAMILY CALENDAR</p><h2>September 2026</h2></div>
+              <div class="calendar-controls"><button class="icon-button" aria-label="Previous week">‹</button><button class="today-button">Today</button><button class="icon-button" aria-label="Next week">›</button><button class="icon-button expand-button" data-view="calendar" aria-label="Open full calendar">↗</button></div>
+            </div>
+            <div class="week" id="week-calendar"></div>
+            <div class="calendar-legend"><span><i class="dot amber"></i>James</span><span><i class="dot rose"></i>Sarah</span><span><i class="dot blue"></i>Caroline</span><span><i class="dot green"></i>Family</span><button data-view="calendar">View full calendar →</button></div>
+          </section>
 
-        <h3>Add profile</h3>
-        <form id="profile-form" class="stack-form">
-          <input id="profile-name" type="text" placeholder="Name" required />
-          <select id="profile-role" required>
-            <option value="kid">Kid</option>
-            <option value="parent">Parent</option>
-            <option value="admin">Admin</option>
-          </select>
-          <input id="profile-pin" type="password" placeholder="PIN (required for admin)" />
-          <button type="submit">Create profile</button>
-        </form>
+          <div class="dashboard-grid">
+            <section class="card panel tasks-panel"><div class="section-head"><div><p class="eyebrow">TODAY</p><h2>Tasks due</h2></div><button class="text-button" data-view="tasks">View all <span>→</span></button></div><div id="home-tasks"></div><button class="add-row" data-add="task">＋ Add a task</button></section>
+            <section class="card panel meal-panel"><div class="section-head"><div><p class="eyebrow">TONIGHT</p><h2>Dinner</h2></div><button class="more-button" aria-label="Meal options">•••</button></div><div class="meal-content"><div class="meal-art" aria-hidden="true">🥘</div><div><span class="recipe-pill">RECIPE</span><h3>Roasted chicken &amp; vegetables</h3><p>45 min <i>·</i> Family favorite</p><button class="text-button" data-view="meals">View recipe →</button></div></div><div class="meal-footer"><span>Up next</span><strong>Fri · Homemade pizza</strong></div></section>
+            <section class="card panel grocery-panel"><div class="section-head"><div><p class="eyebrow">GROCERY</p><h2>12 items</h2></div><button class="round-button" data-add="grocery" aria-label="Add grocery item">＋</button></div><div class="progress"><i style="width:58%"></i></div><p class="muted">7 of 12 picked up</p><div class="mini-avatars"><span class="avatar avatar-sarah">SM</span><span>Sarah is shopping at Market Street</span></div><button class="wide-button" data-view="grocery">Open grocery list <span>→</span></button></section>
+            <section class="card panel goal-panel"><div class="section-head"><div><p class="eyebrow">FAMILY GOAL</p><h2>Summer road trip</h2></div><span class="percent">68%</span></div><div class="progress gold"><i style="width:68%"></i></div><div class="goal-meta"><span><strong>$3,400</strong> of $5,000</span><span>124 days left</span></div><div class="goal-people"><div class="stacked"><span class="avatar avatar-james">JM</span><span class="avatar avatar-sarah">SM</span><span class="avatar avatar-caroline">CM</span></div><button class="text-button" data-view="goals">View goal →</button></div></section>
+          </div>
 
-        <h3>Profiles</h3>
-        <ul id="profile-list" class="list"></ul>
+          <div class="lower-grid">
+            <section class="card panel"><div class="section-head"><div><p class="eyebrow">FAMILY FEED</p><h2>Recent moments</h2></div><button class="text-button" data-view="feed">See all →</button></div><article class="feed-item"><span class="avatar avatar-sarah">SM</span><div><div class="feed-author"><strong>Sarah</strong><span>2 hours ago</span></div><p>First day of school success! She was so excited 🎒</p><div class="photo-strip"><div class="photo p1"></div><div class="photo p2"></div></div><div class="reactions"><button>♥ 8</button><button>♡ 3 comments</button></div></div></article></section>
+            <section class="card panel"><div class="section-head"><div><p class="eyebrow">COMING UP</p><h2>Reminders</h2></div><button class="text-button" data-view="maintenance">View all →</button></div><div class="reminder"><span class="reminder-icon car">◇</span><div><strong>Oil change due</strong><p>Subaru Outback · in 5 days</p></div><span class="status amber-text">Soon</span></div><div class="reminder"><span class="reminder-icon home">⌂</span><div><strong>Replace HVAC filter</strong><p>Home · September 14</p></div><span class="status">11 days</span></div><div class="reminder"><span class="reminder-icon gift">♢</span><div><strong>Mom's birthday</strong><p>September 18</p></div><span class="status">15 days</span></div></section>
+          </div>
+        </section>
 
-        <h3>Section visibility</h3>
-        <form id="permissions-form" class="stack-form">
-          <label for="perm-events">Schedule visibility</label>
-          <select id="perm-events">
-            <option value="kid">Kid and above</option>
-            <option value="parent">Parent and admin only</option>
-            <option value="admin">Admin only</option>
-          </select>
+        <section class="view" id="view-module">
+          <div class="module-header"><div><p class="eyebrow" id="module-kicker">ORGANIZE</p><h2 id="module-title">Tasks</h2><p id="module-description">Keep the household moving together.</p></div><button class="quick-add" id="module-add">＋ Add new</button></div>
+          <div id="module-content"></div>
+        </section>
+      </main>
+      <nav class="mobile-nav" aria-label="Mobile navigation"><button class="active" data-view="home"><span>⌂</span>Home</button><button data-view="calendar"><span>□</span>Calendar</button><button class="mobile-add" id="mobile-add" aria-label="Quick add">＋</button><button data-view="tasks"><span>✓</span>Tasks</button><button data-view="feed"><span>♢</span>Feed</button></nav>
+    </div>
+  </div>
 
-          <label for="perm-groceries">Grocery visibility</label>
-          <select id="perm-groceries">
-            <option value="kid">Kid and above</option>
-            <option value="parent">Parent and admin only</option>
-            <option value="admin">Admin only</option>
-          </select>
-
-          <label for="perm-chores">Chore visibility</label>
-          <select id="perm-chores">
-            <option value="kid">Kid and above</option>
-            <option value="parent">Parent and admin only</option>
-            <option value="admin">Admin only</option>
-          </select>
-
-          <label for="perm-notes">Notes visibility</label>
-          <select id="perm-notes">
-            <option value="kid">Kid and above</option>
-            <option value="parent">Parent and admin only</option>
-            <option value="admin">Admin only</option>
-          </select>
-
-          <button type="submit">Save visibility rules</button>
-        </form>
-      </section>
-
-      <section class="card" id="events-section" data-min-role="kid">
-        <h2>📅 Shared Schedule</h2>
-        <form id="event-form" class="inline-form">
-          <input id="event-title" type="text" placeholder="Event name" required />
-          <input id="event-date" type="date" required />
-          <button type="submit">Add</button>
-        </form>
-        <ul id="event-list" class="list"></ul>
-      </section>
-
-      <section class="card" id="groceries-section" data-min-role="kid">
-        <h2>🛒 Grocery List</h2>
-        <form id="grocery-form" class="inline-form">
-          <input id="grocery-item" type="text" placeholder="Add grocery item" required />
-          <button type="submit">Add</button>
-        </form>
-        <ul id="grocery-list" class="list"></ul>
-      </section>
-
-      <section class="card" id="chores-section" data-min-role="kid">
-        <h2>✅ Chore Board</h2>
-        <form id="chore-form" class="inline-form">
-          <input id="chore-item" type="text" placeholder="Add chore" required />
-          <button type="submit">Add</button>
-        </form>
-        <ul id="chore-list" class="list"></ul>
-      </section>
-
-      <section class="card" id="notes-section" data-min-role="parent">
-        <h2>📌 Notes</h2>
-        <textarea id="notes" rows="8" placeholder="Shared notes for reminders, meal plans, or ideas..."></textarea>
-        <p class="hint">Saved automatically in your browser.</p>
-      </section>
-    </main>
-
-    <footer>
-      <p>Built with free tools: HTML, CSS, and JavaScript.</p>
-    </footer>
-
-    <script src="script.js"></script>
-  </body>
+  <dialog id="action-dialog"><form method="dialog" id="action-form"><div class="dialog-head"><div><p class="eyebrow">QUICK ADD</p><h2 id="dialog-title">Add something</h2></div><button class="icon-button" value="cancel" aria-label="Close">×</button></div><div id="dialog-body"></div><div class="dialog-actions"><button class="secondary" value="cancel">Cancel</button><button class="quick-add" id="dialog-save" value="default">Save</button></div></form></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"><span>✓</span><span id="toast-message">Saved</span></div>
+  <div class="scrim" id="scrim"></div>
+  <script src="script.js"></script>
+</body>
 </html>

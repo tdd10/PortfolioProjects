@@ -1,50 +1,45 @@
-# Family Hub (Free Website)
+# Hearth — Family Hub V1
 
-This project is a **100% free family hub website** built with plain HTML/CSS/JavaScript.
+Hearth is a mobile-first, installable Family Hub experience: a calm shared dashboard for calendar, tasks, meals, groceries, goals, memories, maintenance, and private spaces. This repository contains the dependency-free front-end foundation and an interactive local data adapter.
 
-## Features
-
-- Multiple family profiles (kid / parent / admin)
-- Admin profile management (create/remove profiles)
-- Role-based visibility controls (admin decides what each role can see)
-- Shared schedule/events
-- Grocery list with check-off
-- Chore board with check-off
-- Shared notes
-- Local storage persistence (no account required)
-
-## Default admin access
-
-On first load, a default admin profile is created:
-
-- **Name**: `Family Admin`
-- **Role**: `admin`
-- **PIN**: `1234`
-
-Change this by creating a new admin profile and deleting/replacing the default profile.
+> **Security boundary:** this static build is a UX/reference implementation, not a production authentication server. Browser storage is intentionally treated as untrusted. Do not deploy it with real private, financial, journal, or document data. Production authorization must be enforced by the server described in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); hiding a screen is never authorization.
 
 ## Run locally
 
-Just open `index.html` in your browser.
+```bash
+python3 -m http.server 4173
+# open http://localhost:4173
+```
 
-## Publish for free
+No package installation or build step is required. Serving over HTTP enables the service worker and installable PWA behavior. Directly opening `index.html` works, but service workers are unavailable on `file:` URLs.
 
-### Option 1: GitHub Pages
+## Included V1 experience
 
-1. Push this repo to GitHub.
-2. Go to **Settings → Pages**.
-3. Under **Build and deployment**, set source to **Deploy from branch**.
-4. Choose your default branch and root (`/`).
-5. Save. Your site will be live on `https://<username>.github.io/<repo>`.
+- Responsive family dashboard with a prominent combined calendar
+- Persisted task completion, grocery history, quick-add, family posts, and navigation
+- Full module surfaces for lists, meals/recipes, goals/rewards, maintenance, gallery, journal, and portfolio invitations
+- Explicit secure shells for Finance and Document Vault—without fake financial behavior
+- Offline application shell, web manifest, accessible labels, keyboard focus, and reduced-motion support
+- Escaped user-generated text and no dynamic script evaluation
 
-### Option 2: Netlify Drop
+Reset demo data with `localStorage.removeItem('hearth-family-hub-v1')` in browser developer tools.
 
-1. Go to https://app.netlify.com/drop
-2. Drag-and-drop this project folder.
-3. Netlify gives you a free URL instantly.
+## Checks
 
-## Notes
+```bash
+node --check script.js
+node tests/smoke.mjs
+python3 -m json.tool manifest.webmanifest
+```
 
-- Data is saved in each browser's local storage.
-- Admin PINs and profile data are local to the browser, so this is a convenience control, not enterprise-grade security.
-- If you want synced profiles across devices, add a free backend (for example Firebase free tier or Supabase free tier).
+## Production path
+
+The next deployment phase replaces the local adapter with a versioned API while preserving module contracts. Recommended portable stack: TypeScript, a mature Node LTS server, PostgreSQL, an S3-compatible object store, Argon2id passwords, WebAuthn/TOTP MFA, and a server-side session store. See:
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — domain boundaries and source-of-truth rules
+- [`docs/SECURITY.md`](docs/SECURITY.md) — threat model and deny-by-default controls
+- [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) — normalized production entities and lifecycle
+
+## Deployment notes
+
+Host the static client from any standards-compliant web server with HTTPS. In production, set a strict Content Security Policy, use same-site secure cookies, keep API and session secrets in environment variables, and run PostgreSQL migrations before the application rollout. Uploaded originals must remain exportable from an S3-compatible bucket; never store bank credentials.
